@@ -1,0 +1,9 @@
+{
+  "fastsam": {
+    "imgsz": 512,
+    "conf": 0.25,
+    "iou": 0.9,
+    "retina_masks": true
+  },
+  "balanced_threshold": 0.5401658842336331
+}
