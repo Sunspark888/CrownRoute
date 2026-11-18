@@ -116,7 +116,7 @@ def connected_components_with_stats(mask):
 
 def touches_crop_edge(hole_mask, margin=2):
     """
-    洞如果碰到 bbox crop 边缘，就认为是贴边洞，不填
+    Identify holes close to the crop boundary so they can be preserved.
     """
     h, w = hole_mask.shape
     ys, xs = np.where(hole_mask > 0)
@@ -146,7 +146,7 @@ def contrast_aware_hole_recovery(crop_bgr, binary_mask):
     hole_records = []
 
     for _, hole_mask, area in hole_comps:
-        # 1) 大洞默认保留
+        # Preserve large holes.
         if area > MAX_HOLE_AREA:
             debug_keep[hole_mask > 0] = 1
             hole_records.append({
@@ -155,7 +155,7 @@ def contrast_aware_hole_recovery(crop_bgr, binary_mask):
             })
             continue
 
-        # 2) 贴边洞默认保留
+        # Preserve holes close to a crop edge.
         if touches_crop_edge(hole_mask, margin=EDGE_TOUCH_MARGIN):
             debug_keep[hole_mask > 0] = 1
             debug_edge[hole_mask > 0] = 1
@@ -165,7 +165,7 @@ def contrast_aware_hole_recovery(crop_bgr, binary_mask):
             })
             continue
 
-        # 3) 做 ring
+        # Form the foreground ring around the hole.
         dilated = cv2.dilate(hole_mask.astype(np.uint8), kernel, iterations=1)
         ring = (dilated - hole_mask).clip(0, 1).astype(np.uint8)
         ring = ring & binary_mask.astype(np.uint8)
@@ -183,7 +183,7 @@ def contrast_aware_hole_recovery(crop_bgr, binary_mask):
         ring_mean = float(gray[ring > 0].mean())
         delta = ring_mean - hole_mean
 
-        # 4) 相对更暗 -> 保留
+        # Preserve a hole that is sufficiently darker than the ring.
         if delta >= DELTA_THRESH:
             debug_keep[hole_mask > 0] = 1
             action = "keep_dark_hole"

@@ -1,0 +1,7 @@
+# C1 fixed-member, 8-epoch student runs: Linux, Python 3.12.3, CUDA 12.6 wheels.
+# Direct runtime dependencies only; provide compatible wheels and their dependencies.
+torch==2.12.1+cu126
+torchvision==0.27.1+cu126
+numpy==2.4.4
+Pillow==12.2.0
+pycocotools==2.0.10

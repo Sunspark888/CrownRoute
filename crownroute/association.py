@@ -67,7 +67,7 @@ def mask_center(mask):
 
 def compute_inside_ratio(mask, gt_box):
     """
-    候选mask有多少比例落在gt bbox内
+    Fraction of candidate foreground pixels inside the weak box.
     """
     x1, y1, x2, y2 = gt_box
     total_area = mask.sum()
@@ -80,7 +80,7 @@ def compute_inside_ratio(mask, gt_box):
 
 def compute_center_score(mask, gt_box, image_shape):
     """
-    候选mask中心和gt bbox中心越近越好
+    Proximity of the foreground centroid to the weak-box center.
     """
     h, w = image_shape[:2]
     mc = mask_center(mask)
@@ -90,7 +90,7 @@ def compute_center_score(mask, gt_box, image_shape):
     gc = bbox_center(gt_box)
     dist = np.linalg.norm(mc - gc)
 
-    # 用图像对角线做归一化
+    # Normalize by the diagonal of the full patch.
     diag = np.sqrt(h * h + w * w) + 1e-6
     norm_dist = dist / diag
     score = 1.0 - norm_dist
@@ -112,8 +112,7 @@ def compute_green_ratio(image_bgr, mask):
 
 def choose_best_mask_with_multiscore(gt_box, candidate_masks, image_bgr):
     """
-    升级版：
-    综合 bbox_iou + inside_ratio + center_score + green_ratio
+    Select the first maximum of the four-feature association score.
     """
     best_score = -1
     best_mask = None

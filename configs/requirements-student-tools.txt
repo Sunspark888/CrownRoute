@@ -1,0 +1,6 @@
+# Non-torch dependencies of the tested Windows/Python 3.12.14 CPU validation tools.
+# Mask R-CNN and final5b imports also need torch/torchvision (versions in student docs).
+numpy==2.4.4
+Pillow==12.2.0
+pycocotools==2.0.11
+scipy==1.18.0

@@ -12,6 +12,27 @@ from scripts.make_c1_demo import make_demo
 
 
 class ConstructionTests(unittest.TestCase):
+    def test_train_and_validation_only_inputs_omit_test_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            inputs = make_demo(root / "inputs")
+            config = json.loads(inputs.read_text())
+            config["patches"][1].update(split="val", source_id="validation")
+            inputs.write_text(json.dumps(config))
+            assemble(inputs, root / "dataset")
+            self.assertTrue((root / "dataset/split/val.txt").is_file())
+            self.assertFalse((root / "dataset/split/test.txt").exists())
+
+    def test_rejected_test_input_retains_empty_test_sentinel(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            inputs = make_demo(root / "inputs")
+            config = json.loads(inputs.read_text())
+            config["patches"][-1].update(split="test", source_id="heldout")
+            inputs.write_text(json.dumps(config))
+            assemble(inputs, root / "dataset")
+            self.assertEqual((root / "dataset/split/test.txt").read_text(), "")
+
     def test_frozen_generation_settings_and_mask_filtering(self):
         masks = np.full((3, 16, 16), 0.5, dtype=np.float32)
         masks[1, :11, :9] = 0.6  # 99 foreground pixels.

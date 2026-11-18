@@ -113,7 +113,11 @@ def assemble(manifest, output, weights=None, device="0"):
         records.sort(key=lambda row: row["class_type"])
         for name, rows in [("dataset_records", records), ("route_outcomes", outcomes)]:
             (root / "meta" / f"{name}.json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
-        for split in ["train", "val", "test"]:
+        splits = ["train", "val"]
+        if "test" in source_splits.values():
+            # Retain the test sentinel even if every test instance was rejected.
+            splits.append("test")
+        for split in splits:
             ids = [row["id"] for row in records if row["source_disjoint_v3_split"] == split]
             (root / "split" / f"{split}.txt").write_text("".join(key + "\n" for key in ids), encoding="utf-8")
         root.rename(output)

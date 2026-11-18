@@ -1,0 +1,3 @@
+# Optional, for generating image-level candidates with locally supplied weights.
+# The saved-candidate example requires only NumPy and OpenCV.
+ultralytics==8.4.75

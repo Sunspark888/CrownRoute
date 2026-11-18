@@ -1,4 +1,4 @@
-"""Replay corrected-reference Mask AP on saved COCO validation predictions."""
+"""Replay the student final5b Mask AP used at trajectory observations (0–1). For Table 4 use evaluate_table4.py."""
 
 import argparse
 import json

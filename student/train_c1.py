@@ -199,8 +199,14 @@ def main():
     args = parser.parse_args()
     from protocol import require_cached_weights
 
+    # The original R2 launcher required CUDA, checked the weight identity, and
+    # refused to reuse an existing incomplete run. Each invocation starts fresh.
+    if not torch.cuda.is_available():
+        raise RuntimeError(
+            "C1 training requires CUDA; use smoke_cpu.py for the CPU example"
+        )
     require_cached_weights()
-    args.output.mkdir(parents=True, exist_ok=True)
+    args.output.mkdir(parents=True, exist_ok=False)
     for forbidden in ["normalized_gt_test_manual_coco.json", "gt_test_samples.json"]:
         if (args.manual_root / forbidden).exists():
             raise RuntimeError(f"TEST_ASSET_PRESENT={forbidden}")
@@ -213,7 +219,7 @@ def main():
     torch.manual_seed(args.seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(args.seed)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda")
     train_ds = QualityDataset(args.dataset, "train")
     pseudo_ds = QualityDataset(args.dataset, "val", args.pseudo_audit_limit)
     steps_per_epoch = math.ceil(len(train_ds) / args.batch_size)
@@ -273,25 +279,6 @@ def main():
     resume = args.output / "resume_latest.pth"
     epoch, start_batch, global_step, rows = 1, 0, 0, []
     loss_sums, loss_batches = defaultdict(float), 0
-    if resume.exists():
-        state = torch.load(resume, map_location="cpu", weights_only=False)
-        model.load_state_dict(state["model"])
-        optimizer.load_state_dict(state["optimizer"])
-        scheduler.load_state_dict(state["scheduler"])
-        scaler.load_state_dict(state["scaler"])
-        epoch, start_batch, global_step, rows = (
-            state["epoch"],
-            state["batch_in_epoch"],
-            state["global_step"],
-            state["metric_rows"],
-        )
-        loss_sums.update(state.get("loss_sums", {}))
-        loss_batches = state.get("loss_batches", 0)
-        random.setstate(state["rng_python"])
-        np.random.set_state(state["rng_numpy"])
-        torch.random.set_rng_state(state["rng_torch"])
-        if torch.cuda.is_available() and state["rng_cuda"] is not None:
-            torch.cuda.set_rng_state_all(state["rng_cuda"])
     best_ap = max([float(x["mask_ap"]) for x in rows], default=-1.0)
 
     def evaluate_current(tag: str, current_epoch: int, batch_position: int):

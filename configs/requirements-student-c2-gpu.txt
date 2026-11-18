@@ -1,0 +1,7 @@
+# C2 fixed-update, 47-observation student runs: Linux, Python 3.12.13, CUDA 12.4 wheels.
+# Direct training dependencies from the original T29 environment specification.
+torch==2.5.1+cu124
+torchvision==0.20.1+cu124
+numpy==2.5.2
+Pillow==12.3.0
+pycocotools==2.0.10

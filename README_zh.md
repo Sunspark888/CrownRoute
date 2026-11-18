@@ -1,0 +1,44 @@
+# CrownRoute
+
+[English](README.md)
+
+CrownRoute 从 RGB 图块和树冠弱框构建用于实例分割训练的掩码。一张图块上的多个框共用 FastSAM-s 候选池。可靠候选经细化后进入 Final-A；具备重建资格的记录从框内 RGB 重建，通过固定接纳条件后进入 Final-B。C2 使用独立训练的验证轨迹比较监督配置的效用。
+
+## 在 CPU 上运行监督构建
+
+从仓库根目录执行以下命令。用一个新目录生成合成图块、弱框与候选。演示只依赖 Python 3.10+、NumPy 和 OpenCV，能够展示 A、B 以及三种进入 C 的情形。
+
+```sh
+python -m pip install -r configs/requirements-c1.txt
+python -m scripts.make_c1_demo demo-input
+python -m scripts.build_supervision --manifest demo-input/patches.json --output demo-output
+python -m unittest discover -s tests -p test_c1.py
+```
+
+`demo-output/meta/route_outcomes.json` 记录五个输入实例的去向。`demo-output/split/train.txt` 列出产生标准监督的两个实例。上述依赖清单用于 Python 3.12 环境。使用自备图块和本地 FastSAM-s 权重时，输入格式、命令及掩码坐标约定见 [C1 说明](docs/c1-sources.md)。
+
+## 学生训练、评价与 TSU
+
+| 任务 | 从仓库根目录调用的入口 | 输入 |
+| --- | --- | --- |
+| C1 固定成员学生比较 | `python student/train_c1.py --help` | 实例记录、成员清单、验证参考与模型初始化 |
+| C2 标准配置及边界放宽 | `python student/train_c2.py --help` | 对应冻结成员与统一的验证坐标 |
+| C2 固定规模替换 | `python student/train_fixed_n.py --help` | 固定规模成员与同一训练预算 |
+| 表 4 选定模型的统一回放 | `python student/evaluate_table4.py --help` | 修正后的 COCO 验证参考与已保存的分割预测，使用官方 COCOeval |
+| 表 6 果园清查指标 | `python student/agricultural_metrics.py --help` 导出逐图、逐种子和三种子汇总，单次运行也可在表 4 入口追加 `--inventory` | 按置信度筛选后最大化总掩码 IoU，再保留 IoU ≥ 0.50 的匹配对 |
+| 训练中的逐点评价 | `python student/evaluate.py --help` | 单次验证的预测，使用训练期 final5b 评价程序 |
+| 四项 TSU 读数 | `python tsu/summarize.py --help` | 三种配置、三个种子的逐坐标验证轨迹 |
+
+C1 固定成员比较按八轮训练。C2 比较按 27,422 次成功更新训练，各次运行共享 47 个实际观察点。精确复现 C2 需获得授权的原始图像、冻结成员清单、修正后的人工验证参考及相同的模型初始化。三种配置的组装方式见 [C2 说明](docs/c2-configurations.md)。
+
+学生训练及验证所需的环境、参数与文件布局见[学生与 TSU 说明](docs/student-and-tsu.md)。配置好相应环境后，执行 `python student/smoke_cpu.py` 可用合成输入检查一次网络前向及完美预测、空预测的掩码 AP。执行 `python student/smoke_matching.py` 可核对重复预测和存在多个可匹配树冠时的不同评价规则。CPU 合成检查仅验证这些组件；论文数值的来源是原正式运行和保存的预测。
+
+拿到论文的两份补充 CSV 后，将它们放到当前目录，用 Python 标准库即可复算全部端点。脚本先在单次训练内计算四项读数，再汇总三个种子的均值与样本标准差。
+
+```sh
+python tsu/summarize.py Supplementary_Data_S1_Trajectories.csv --verify Supplementary_Data_S2_Endpoints.csv
+```
+
+## 数据和版本
+
+本仓库为私有审阅版本。原始航片、人工标注、完整训练集及权重由研究团队管理。各组件的使用条件及公开前需确认的事项见[发布范围](docs/distribution.md)。

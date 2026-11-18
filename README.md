@@ -1,10 +1,12 @@
 # CrownRoute
 
-CrownRoute 从 RGB 图块和树冠弱框构建用于实例分割训练的掩码。一张图块上的多个框共用 FastSAM-s 候选池。可靠候选经细化后进入 Final-A；具备重建资格的记录从框内 RGB 重建，通过固定接纳条件后进入 Final-B。C2 使用独立训练的验证轨迹比较监督配置的效用。
+[简体中文](README_zh.md)
 
-## 在 CPU 上运行监督构建
+CrownRoute constructs instance masks for training a tree-crown segmenter from UAV RGB patches and weak bounding boxes. FastSAM-s generates one candidate pool per patch. Each box is associated with a candidate independently. Route I refines a reliable candidate (Final-A). Route II reconstructs the foreground from pixels inside the box and accepts eligible records using the original association features (Final-B). The standard training set contains accepted A and B records. C2 compares supervision configurations using the validation trajectories of separately trained students.
 
-从仓库根目录执行以下命令。用一个新目录生成合成图块、弱框与候选。演示只依赖 Python 3.10+、NumPy 和 OpenCV，能够展示 A、B 以及三种进入 C 的情形。
+## Build supervision on a CPU
+
+From the repository root, use a Python 3.12 environment and two fresh directory names. This example generates synthetic image patches, boxes and candidate masks locally.
 
 ```sh
 python -m pip install -r configs/requirements-c1.txt
@@ -13,26 +15,33 @@ python -m scripts.build_supervision --manifest demo-input/patches.json --output 
 python -m unittest discover -s tests -p test_c1.py
 ```
 
-`demo-output/meta/route_outcomes.json` 记录五个输入实例的去向。`demo-output/split/train.txt` 列出产生标准监督的两个实例。上述依赖清单用于 Python 3.12 环境。使用自备图块和本地 FastSAM-s 权重时，输入格式、命令及掩码坐标约定见 [C1 说明](docs/C1来源.md)。
+`demo-output/meta/route_outcomes.json` gives the outcome for each of five boxes. Two records enter the training split, one through each accepted route. To use your own images and weak boxes, supply a manifest and either a local FastSAM-s checkpoint or saved candidate masks. See the [input format, commands and construction sources](docs/c1-sources.md).
 
-## 学生训练、评价与 TSU
+## Train and evaluate the student
 
-| 任务 | 从仓库根目录调用的入口 | 输入 |
+| Paper analysis | Command to inspect from the repository root | Data or output |
 | --- | --- | --- |
-| C1 固定成员学生比较 | `python student/train_c1.py --help` | 实例记录、成员清单、验证参考与模型初始化 |
-| C2 标准配置及边界放宽 | `python student/train_c2.py --help` | 对应冻结成员与统一的验证坐标 |
-| C2 固定规模替换 | `python student/train_fixed_n.py --help` | 固定规模成员与同一训练预算 |
-| 验证预测评价 | `python student/evaluate.py --help` | COCO 验证参考与分割预测 |
-| 四项 TSU 读数 | `python tsu/summarize.py --help` | 三种配置、三个种子的逐坐标验证轨迹 |
+| C1 fixed-membership comparison | `python student/train_c1.py --help` | Eight epochs, original COCO initialization and a fixed validation reference |
+| C2 standard and expanded configurations | `python student/train_c2.py --help` | Frozen membership and 47 validation observations over 27,422 successful updates |
+| C2 fixed-size replacement | `python student/train_fixed_n.py --help` | Matched record count and the same successful-update budget |
+| Table 4 model comparison | `python student/evaluate_table4.py --help` | Official COCOeval on the saved predictions of each previously selected model |
+| Table 6 orchard inventory | `python student/agricultural_metrics.py --help` for three-seed reports, or add `--inventory` to the Table 4 command for one run | Maximize total mask IoU per patch, then retain pairs with IoU ≥ 0.50. The primary confidence threshold is 0.50 |
+| Training-time validation | `python student/evaluate.py --help` | Replay the project's final5b validation metric |
 
-学生训练及验证所需的环境、参数与文件布局见[学生与 TSU 说明](docs/学生与TSU来源.md)。在该环境内执行 `python student/smoke_cpu.py`，可用合成输入检查一次网络前向及完美预测、空预测的掩码 AP。C1 固定成员比较按八轮训练。C2 比较按 27,422 次成功更新训练，各次运行共享 47 个实际观察点。
+Exact C2 reproduction requires authorized access to the original images, frozen record fields and ordered membership, the corrected manual reference and the specified initialization. See [C2 configuration assembly](docs/c2-configurations.md) and [student environments, input formats and evaluation](docs/student-and-tsu.md). The latter distinguishes the two historical GPU environments from the CPU tools used for code checks.
 
-拿到论文的两份补充 CSV 后，将它们放到当前目录，用 Python 标准库即可复算全部端点。脚本先在单次训练内计算四项读数，再汇总三个种子的均值与样本标准差。
+With the student tools installed, `python student/smoke_cpu.py` checks data loading, a synthetic forward pass and perfect/empty predictions. `python student/smoke_matching.py` checks duplicate detections and an ambiguous two-crown example. These CPU checks exercise components; the paper's training results come from the archived runs.
+
+## Recompute the TSU endpoints
+
+Place the paper's supplementary CSVs in the current directory and run:
 
 ```sh
 python tsu/summarize.py Supplementary_Data_S1_Trajectories.csv --verify Supplementary_Data_S2_Endpoints.csv
 ```
 
-## 数据和版本
+This command uses only the Python standard library. It calculates Peak, Top-5, normalized area under the trajectory, and Late for each run before summarizing the three seeds.
 
-本版本供论文审阅。仓库包含作者项目的计算代码、固定参数和合成示例。论文的完整数值依赖受管理的原始影像、标注和成员清单。各组件的使用条件及公开前需确认的事项见[发布范围](docs/发布范围.md)。
+## Availability
+
+This repository is a private review version. The research images, original annotations, complete supervision sets and model weights are held separately. The synthetic example can be used without access to those assets. See the [distribution scope and third-party terms](docs/distribution.md).

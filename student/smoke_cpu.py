@@ -1,5 +1,6 @@
 """Small CPU check with a synthetic single-crown patch and no model download."""
 
+import argparse
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -18,7 +19,47 @@ def write_json(path, payload):
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
+def check_initialization():
+    from protocol import require_cached_weights
+
+    weight = require_cached_weights()
+    original = torch.load(weight, map_location="cpu", weights_only=True)[
+        "backbone.body.conv1.weight"
+    ].clone()
+
+    def heads(seed):
+        torch.manual_seed(seed)
+        model, status = build_model(
+            {"torch": torch, "torchvision": torchvision}, "none", True
+        )
+        assert status["loaded"] and torch.equal(
+            model.backbone.body.conv1.weight, original
+        )
+        box = model.roi_heads.box_predictor.cls_score.weight.detach().clone()
+        mask = model.roi_heads.mask_predictor.mask_fcn_logits.weight.detach().clone()
+        assert box.shape[0] == mask.shape[0] == 2
+        return box, mask
+
+    first, repeat, different = heads(42), heads(42), heads(43)
+    assert all(
+        torch.equal(a, b) and not torch.equal(a, c)
+        for a, b, c in zip(first, repeat, different)
+    )
+    print(
+        "COCO_V1 cache and backbone verified; both two-class heads repeated with seed 42 and differed with seed 43."
+    )
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check-initialization",
+        action="store_true",
+        help="Also verify the supplied cached COCO_V1 weight and seeded heads",
+    )
+    args = parser.parse_args()
+    if args.check_initialization:
+        check_initialization()
     torch.manual_seed(42)
     torch.set_num_threads(2)
     with TemporaryDirectory() as directory:

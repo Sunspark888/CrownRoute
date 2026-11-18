@@ -54,7 +54,12 @@ def require_cached_weights():
         raise ValueError(
             "Set TORCH_HOME to the cache containing the original COCO_V1 checkpoint"
         )
-    weight = Path(os.environ["TORCH_HOME"]) / "hub" / "checkpoints" / WEIGHT_NAME
+    import torch
+
+    hub = Path(os.environ["TORCH_HOME"]) / "hub"
+    if Path(torch.hub.get_dir()).resolve() != hub.resolve():
+        raise ValueError("Active torch hub path differs from TORCH_HOME/hub")
+    weight = hub / "checkpoints" / WEIGHT_NAME
     if not weight.is_file() or digest(weight) != WEIGHT_SHA256:
         raise ValueError("Missing or different COCO_V1 checkpoint")
     return weight.resolve()
