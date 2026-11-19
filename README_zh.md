@@ -1,4 +1,4 @@
-# CrownRoute — 框监督树冠实例分割
+# CrownRoute — 框监督荔枝树冠实例分割
 
 [English](README.md)
 

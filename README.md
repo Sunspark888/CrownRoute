@@ -1,4 +1,4 @@
-# CrownRoute — Box-Supervised Tree Crown Instance Segmentation
+# CrownRoute — Box-Supervised Instance Segmentation of Litchi Tree Crowns
 
 [简体中文](README_zh.md)
 
