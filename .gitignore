@@ -9,3 +9,32 @@ demo-output/
 *.pth
 *.ckpt
 .env
+.env.*
+
+# Research inputs and configuration directories used in the examples
+/data/
+/datasets/
+/input/
+/base_package/
+/delta_package/
+/frozen_fixed/
+/recovered_delta/
+/prepared/
+/prepared_from_archive/
+/standard/
+/demo_inputs/
+/demo_standard/
+/Supplementary_Data_*.csv
+
+# Local checkpoints, predictions and training reports
+/checkpoints/
+/weights/
+/predictions/
+/outputs/
+/results/
+/inventory-report/
+*.safetensors
+*.onnx
+/saved_*_predictions.json
+/seed*_masks.json
+/crownroute_seed*.csv

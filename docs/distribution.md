@@ -12,8 +12,8 @@ This repository contains the CrownRoute implementation, configurations and synth
 | OpenCV and NumPy | Image, binary-mask and array operations. | [OpenCV license](https://github.com/opencv/opencv/blob/4.x/LICENSE) · [NumPy license](https://github.com/numpy/numpy/blob/main/LICENSE.txt) |
 | SciPy | Hungarian assignment for the patch-level inventory metrics in Table 6. | [SciPy license](https://github.com/scipy/scipy/blob/main/LICENSE.txt) |
 
-Upstream providers distribute their respective implementations and model weights. Ultralytics and FastSAM list AGPL-3.0 for their source code. Before public release, the authors should review the versions used, code ownership and dependency terms, then select a license for their own code. No open-source license is granted for this private review version.
+Upstream providers distribute their respective implementations and model weights. Ultralytics and FastSAM list AGPL-3.0 for their source code. The authors have not specified a license for CrownRoute's original code. The licenses linked above apply to the respective third-party components.
 
 The student loss uses torchvision's RoI mask-projection interface and retains its target-extraction structure. The repository includes the [torchvision BSD 3-Clause license notice](TORCHVISION-LICENSE.txt).
 
-The authors manage the research data separately. The repository excludes original aerial images, real annotations, training masks, run weights and prediction files. A license for project code grants no rights to the research data.
+The authors keep the manuscript, original aerial images, real annotations, training masks, model weights and prediction files separately. The synthetic examples generate their inputs locally.

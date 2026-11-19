@@ -6,7 +6,7 @@
 
 ## 在 CPU 上运行监督构建
 
-从仓库根目录执行以下命令。用一个新目录生成合成图块、弱框与候选。演示只依赖 Python 3.10+、NumPy 和 OpenCV，能够展示 A、B 以及三种进入 C 的情形。
+此演示已在 Python 3.12 环境下验证。请在仓库根目录运行以下命令，使用两个新目录分别存放合成输入和构建结果。五个弱框分别展示 Final-A、Final-B 及三种进入 Final-C 的情形。
 
 ```sh
 python -m pip install -r configs/requirements-c1.txt
@@ -15,7 +15,7 @@ python -m scripts.build_supervision --manifest demo-input/patches.json --output 
 python -m unittest discover -s tests -p test_c1.py
 ```
 
-`demo-output/meta/route_outcomes.json` 记录五个输入实例的去向。`demo-output/split/train.txt` 列出产生标准监督的两个实例。上述依赖清单用于 Python 3.12 环境。使用自备图块和本地 FastSAM-s 权重时，输入格式、命令及掩码坐标约定见 [C1 说明](docs/c1-sources.md)。
+`demo-output/meta/route_outcomes.json` 记录五个输入实例的去向。`demo-output/split/train.txt` 列出产生标准监督的两个实例。使用自备图块和本地 FastSAM-s 权重时，输入格式、命令及掩码坐标约定见 [C1 说明](docs/c1-sources.md)。
 
 ## 学生训练、评价与 TSU
 
@@ -33,6 +33,8 @@ C1 固定成员比较按八轮训练。C2 比较按 27,422 次成功更新训练
 
 学生训练及验证所需的环境、参数与文件布局见[学生与 TSU 说明](docs/student-and-tsu.md)。配置好相应环境后，执行 `python student/smoke_cpu.py` 可用合成输入检查一次网络前向及完美预测、空预测的掩码 AP。执行 `python student/smoke_matching.py` 可核对重复预测和存在多个可匹配树冠时的不同评价规则。CPU 合成检查仅验证这些组件；论文数值的来源是原正式运行和保存的预测。
 
+补充材料 S11 节的不确定性估计见 [Bootstrap 分析说明](docs/s11-bootstrap.md)。
+
 拿到论文的两份补充 CSV 后，将它们放到当前目录，用 Python 标准库即可复算全部端点。脚本先在单次训练内计算四项读数，再汇总三个种子的均值与样本标准差。
 
 ```sh
@@ -41,4 +43,4 @@ python tsu/summarize.py Supplementary_Data_S1_Trajectories.csv --verify Suppleme
 
 ## 数据和版本
 
-本仓库为私有审阅版本。原始航片、人工标注、完整训练集及权重由研究团队管理。各组件的使用条件及公开前需确认的事项见[发布范围](docs/distribution.md)。
+本仓库提供论文配套源码和合成示例。论文全文、原始航片、人工标注、完整训练监督集及模型权重由研究团队另行保存。第三方组件及其使用条款见[发布范围说明](docs/distribution.md)。

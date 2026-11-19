@@ -8,6 +8,14 @@ Each configuration names a fixed training population. The three training seeds (
 | Boundary-relaxed (`RECOVERED_C`) | 4,778 | 2,079 | 1,152 | 8,009 |
 | Fixed-size substitution (`FIXED_N`) | 4,778 | 927 | 1,152 | 6,857 |
 
+## Preparing the CPU environment
+
+Recovery and the synthetic configuration test use NumPy and OpenCV. From the repository root, install the [CPU dependencies](../configs/requirements-c1.txt) in a Python 3.12 environment, the version used for the CPU checks. Assembly from existing inventories (`scripts.build_c2_configs`) uses only the Python standard library. The [GPU training environment](student-and-tsu.md) is set up separately.
+
+```sh
+python -m pip install -r configs/requirements-c1.txt
+```
+
 ## Recovery population
 
 The source population was the training partition's **original intermediate C**, as classified before the route II admission gate. Thus the recovery inventory omits intermediate B records rejected later by that gate. The original builder sorted these C records by instance ID and used the frozen RGB/box recovery and normalization functions. It accepted every nonempty successful result. Of 1,153 eligible training-side records, 1,152 yielded masks. One had no initial component. Neither the 60-record geometry probe nor a validation IoU threshold selected these members.

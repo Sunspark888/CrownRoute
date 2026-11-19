@@ -6,7 +6,7 @@ This repository contains the code accompanying our paper on segmenting individua
 
 ## Build supervision on a CPU
 
-From the repository root, use a Python 3.12 environment and two fresh directory names. This example generates synthetic image patches, boxes and candidate masks locally.
+The CPU example was tested with Python 3.12. From the repository root, use two fresh directory names to generate synthetic image patches, boxes and candidate masks locally.
 
 ```sh
 python -m pip install -r configs/requirements-c1.txt
@@ -32,6 +32,8 @@ Exact C2 reproduction requires authorized access to the original images, frozen 
 
 With the student tools installed, `python student/smoke_cpu.py` checks data loading, a synthetic forward pass and perfect/empty predictions. `python student/smoke_matching.py` checks duplicate detections and an ambiguous two-crown example. These CPU checks exercise components; the paper's training results come from the archived runs.
 
+For the uncertainty estimates in Supplementary Section S11, see the [bootstrap analysis guide](docs/s11-bootstrap.md).
+
 ## Recompute the TSU endpoints
 
 Place the paper's supplementary CSVs in the current directory and run:
@@ -44,4 +46,4 @@ This command uses only the Python standard library. It calculates Peak, Top-5, n
 
 ## Availability
 
-This repository is a private review version. The research images, original annotations, complete supervision sets and model weights are held separately. The synthetic example can be used without access to those assets. See the [distribution scope and third-party terms](docs/distribution.md).
+This repository provides the paper's source code and synthetic example. The authors keep the manuscript, research images, original annotations, complete supervision sets and model weights separately. See the [distribution scope and third-party notices](docs/distribution.md).

@@ -16,9 +16,10 @@ The frozen cutoff used an 80% global coverage target and the distribution of val
 
 ## Saved-candidate example
 
-From the repository root with Python 3.10+, NumPy and OpenCV:
+Run the following commands from the repository root in a Python 3.12 environment, the version tested for this example.
 
 ```bash
+python -m pip install -r configs/requirements-c1.txt
 python -m scripts.make_c1_demo demo_inputs
 python -m scripts.build_supervision --manifest demo_inputs/patches.json --output demo_standard
 python -m unittest discover -s tests -p "test_c1.py" -v
