@@ -1,8 +1,8 @@
-# CrownRoute
+# CrownRoute — Box-Supervised Tree Crown Instance Segmentation
 
 [简体中文](README_zh.md)
 
-CrownRoute constructs instance masks for training a tree-crown segmenter from UAV RGB patches and weak bounding boxes. FastSAM-s generates one candidate pool per patch. Each box is associated with a candidate independently. Route I refines a reliable candidate (Final-A). Route II reconstructs the foreground from pixels inside the box and accepts eligible records using the original association features (Final-B). The standard training set contains accepted A and B records. C2 compares supervision configurations using the validation trajectories of separately trained students.
+This repository contains the code accompanying our paper on segmenting individual litchi tree crowns in UAV RGB imagery using only bounding box annotations for training. CrownRoute builds training masks by refining reliable candidates or, when needed, reconstructing a crown mask from the pixels inside its box. The paper also compares how different sets of training masks affect the performance of an instance segmentation model over the course of training.
 
 ## Build supervision on a CPU
 
